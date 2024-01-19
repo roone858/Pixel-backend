@@ -1,11 +1,12 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Res,
-  // Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -19,11 +20,16 @@ import * as path from 'path';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { join } from 'path';
 import { Response } from 'express';
+import { JwtPayload } from 'src/auth/jwt.decorator';
+import { PaymentService } from 'src/payment/payment.service';
 // import mongoose from 'mongoose';
 
 @Controller('resource')
 export class ResourceController {
-  constructor(private readonly resourceService: ResourceService) {}
+  constructor(
+    private readonly resourceService: ResourceService,
+    private readonly paymentService: PaymentService,
+  ) {}
 
   @Get()
   async getImages(@Res() res: Response) {
@@ -34,22 +40,24 @@ export class ResourceController {
   }
 
   @Get('/:image')
-  async getFile(@Param('image') image: string, @Res() res: Response) {
-    // Construct the path to the user's profile picture
-    const isPremium = false;
+  async getImage(
+    @Param('image') image: string,
+    @JwtPayload() payload: any,
+    @Res() res: Response,
+  ) {
     const imagePath = join(__dirname, '..', '..', 'uploads', image);
-    const watermarkPath = join(
-      __dirname,
-      '..',
-      '..',
-      'uploads',
-      'pngegg1705536854239.png',
-    );
-    const watermark = await this.resourceService.addWatermark(
-      imagePath,
-      watermarkPath,
-    );
-    isPremium ? res.sendFile(imagePath) : res.end(watermark);
+    const isPaymentNotExpired = payload
+      ? await this.paymentService.isPaymentNotExpired(payload._id)
+      : false;
+
+    if (isPaymentNotExpired) {
+      // Send the image if payment is not expired
+      res.sendFile(imagePath);
+    } else {
+      // Add watermark if payment is expired
+      const watermark = await this.resourceService.addWatermark(imagePath);
+      res.end(watermark);
+    }
   }
 
   @Get('details/:imageName')
@@ -86,22 +94,21 @@ export class ResourceController {
     @User() user: UserDocument,
     @Body() body,
   ) {
-    const imageDetails = await this.resourceService.calculateImageDetails(file);
-    return this.resourceService.create({
-      title: body.title,
-      description: body.description,
-      category: '60a1d71b4e99a25c942ef1c1', // Replace with an actual ObjectId of a category
-      fileName: file.filename,
-      metadata: {
-        size: imageDetails.fileSizeInMB,
-        resolution: imageDetails.resolutionX + 'x' + imageDetails.resolutionX,
-        format: imageDetails.extension,
-      },
-      uploader: user._id, // Replace with an actual ObjectId of a authentic  user
-      downloadStatistics: {
-        downloadCount: 10,
-        likes: 5,
-      },
-    });
+    const imageDetails = await this.resourceService.calculateImageDetails(
+      file,
+      body.title,
+      body.description,
+      body.categoryId,
+      user._id,
+    );
+    return this.resourceService.create(imageDetails);
+  }
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() body) {
+    return this.resourceService.update(id, body);
+  }
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    return this.resourceService.delete(id);
   }
 }

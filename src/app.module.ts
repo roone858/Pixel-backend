@@ -7,6 +7,8 @@ import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ResourceModule } from './resource/resource.module';
+import { CategoryModule } from './category/category.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ResourceModule } from './resource/resource.module';
     MailModule,
     AuthModule,
     ResourceModule,
+    CategoryModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

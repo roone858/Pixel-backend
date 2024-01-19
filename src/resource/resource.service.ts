@@ -36,17 +36,45 @@ export class ResourceService {
       .exec();
   }
 
-  // async delete(id: string): Promise<Resource> {
-  //   return this.resourceModel.findByIdAndRemove(id).exec();
-  // }
+  async delete(id: string): Promise<Resource> {
+    const resource = await this.resourceModel.findById(id).exec();
 
-  async calculateImageDetails(file: any): Promise<any> {
+    if (!resource) {
+      // Handle the case where the resource is not found
+      throw new Error('Resource not found');
+    }
+
+    // Delete the file from the uploads folder
+    try {
+      const imagePath = path.join(
+        __dirname,
+        '..',
+        '..',
+        'uploads',
+        resource.fileName,
+      );
+      console.log(imagePath);
+      fs.unlink(imagePath, () => {});
+    } catch (err) {
+      // Handle file deletion error (optional)
+      console.error(`Error deleting file: ${err.message}`);
+    }
+    return this.resourceModel.findByIdAndDelete(id).exec();
+  }
+
+  async calculateImageDetails(
+    file,
+    title,
+    description,
+    categoryId,
+    userId,
+  ): Promise<any> {
     try {
       // Get the file size
       const fileSizeInBytes = fs.statSync(file.path).size;
       // Convert file size to megabytes
       const fileSizeInMB = fileSizeInBytes / (1024 * 1024); // 1 MB = 1024 KB = 1024 * 1024 bytes
-      const fileSizeInKB = fileSizeInBytes / 1024; // 1 KB = 1024 bytes
+      // const fileSizeInKB = fileSizeInBytes / 1024; // 1 KB = 1024 bytes
       const extension = path.extname(file.originalname);
       // Get the image dimensions (width and height)
       const dimensions = sizeOf(file.path);
@@ -59,26 +87,32 @@ export class ResourceService {
       const resolutionY = Math.round(height / (dpi / 25.4));
 
       return {
-        fileSizeInBytes,
-        fileSizeInKB,
-        fileSizeInMB,
-        extension,
-        width,
-        height,
-        resolutionX,
-        resolutionY,
+        title: title,
+        description: description,
+        category: categoryId, // Replace with an actual ObjectId of a category
+        fileName: file.filename,
+        metadata: {
+          size: fileSizeInMB,
+          resolution: resolutionX + 'x' + resolutionY,
+          format: extension,
+        },
+        uploader: userId, // Replace with an actual ObjectId of a authentic  user
+        downloadStatistics: {
+          downloadCount: 0,
+          likes: 0,
+        },
       };
     } catch (error) {
       throw new Error('Error calculating image details');
     }
   }
-  async addWatermark(inputImagePath, watermarkPath) {
+  async addWatermark(inputImagePath) {
     try {
       const image = await Jimp.read(inputImagePath);
-      const watermark = await Jimp.read(watermarkPath); // Replace with the path to your watermark image
+      // const watermark = await Jimp.read(watermarkPath); // Replace with the path to your watermark image
 
       // Resize watermark if needed
-      watermark.resize(image.getWidth() / 2, Jimp.AUTO);
+      // watermark.resize(image.getWidth() / 2, Jimp.AUTO);
 
       // Calculate the position to center the watermark
       // const x = (image.getWidth() - watermark.getWidth()) / 2;
