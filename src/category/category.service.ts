@@ -12,7 +12,10 @@ export class CategoryService {
   ) {}
 
   async createCategory(category: Category): Promise<Category> {
-    const createdCategory = new this.categoryModel(category);
+    const createdCategory = new this.categoryModel({
+      ...category,
+      name: category.name.toLowerCase(),
+    });
     return createdCategory.save();
   }
 
@@ -22,5 +25,8 @@ export class CategoryService {
 
   async findCategoryById(id: string): Promise<Category> {
     return this.categoryModel.findById(id).exec();
+  }
+  async findByIdAndDelete(id: string): Promise<Category> {
+    return this.categoryModel.findByIdAndDelete(id).exec();
   }
 }

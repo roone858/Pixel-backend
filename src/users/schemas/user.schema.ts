@@ -34,14 +34,17 @@ export class User {
   @Prop({ type: UserProfile })
   profile: UserProfile;
 
-  @Prop({ default: false })
-  isVerified: boolean;
-
   @Prop({ type: UserPreferences })
   preferences: UserPreferences;
 
   @Prop({ type: [String], default: [] })
   authenticationTokens: string[];
+
+  @Prop({ required: false, default: false })
+  confirmed: boolean;
+
+  @Prop({ required: false, default: 'user', enum: ['user', 'admin'] })
+  role: 'user' | 'admin';
 }
 
 export type UserDocument = User & Document;

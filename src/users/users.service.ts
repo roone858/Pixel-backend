@@ -110,6 +110,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const user = new this.userModel({
       ...createUserDto,
+      role: 'user',
       password: await this.hashPassword(createUserDto.password),
     });
     const result = await user.save();

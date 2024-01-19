@@ -4,8 +4,15 @@ import {
   IsNotEmpty,
   // IsArray,
   ValidateNested,
+  IsEnum,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum UserRole {
+  User = 'user',
+  Admin = 'admin',
+}
 
 class UserProfileDto {
   @IsString()
@@ -42,6 +49,10 @@ export class CreateUserDto {
   @Type(() => UserPreferencesDto)
   @ValidateNested()
   preferences: UserPreferencesDto;
+
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole; // <-- Use the UserRole enum here
 
   // @IsArray()
   // @IsNotEmpty()
