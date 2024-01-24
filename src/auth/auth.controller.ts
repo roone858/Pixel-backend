@@ -79,6 +79,13 @@ export class AuthController {
       return res.status(500).json({ message: 'Internal Server Error' });
     }
   }
+
+  @Get('verify-token')
+  @UseGuards(JwtAuthGuard)
+  verifyToken() {
+    return { message: 'Token verified successfully' };
+  }
+
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   getProfile(@Request() req) {

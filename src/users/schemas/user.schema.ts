@@ -4,10 +4,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 @Schema()
 export class UserProfile {
   @Prop({ required: true })
-  firstName: string;
-
-  @Prop({ required: true })
-  lastName: string;
+  name: string;
 
   // Add other profile details as needed
 }

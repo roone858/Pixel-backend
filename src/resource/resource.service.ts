@@ -22,6 +22,12 @@ export class ResourceService {
   async findAll(): Promise<Resource[]> {
     return this.resourceModel.find().exec();
   }
+  async findAllByTitle(title): Promise<Resource[]> {
+    // return this.resourceModel.find({titile.include(title)}).exec();
+    return this.resourceModel
+      .find({ title: { $regex: new RegExp(title, 'i') } })
+      .exec();
+  }
 
   async findByFileName(fileName: string): Promise<Resource> {
     return this.resourceModel.findOne({ fileName: fileName }).exec();
@@ -106,8 +112,12 @@ export class ResourceService {
       throw new Error('Error calculating image details');
     }
   }
-  async addWatermark(inputImagePath) {
+  async addWatermark(inputImagePath, outputImagePath) {
     try {
+      // await sharp(inputImagePath)
+      //   .resize({ width: 800, height: 600 })
+      //   .toFile(outputImagePath);
+
       const image = await Jimp.read(inputImagePath);
       // const watermark = await Jimp.read(watermarkPath); // Replace with the path to your watermark image
 
@@ -115,8 +125,9 @@ export class ResourceService {
       // watermark.resize(image.getWidth() / 2, Jimp.AUTO);
 
       // Calculate the position to center the watermark
-      // const x = (image.getWidth() - watermark.getWidth()) / 2;
-      // const y = (image.getHeight() - watermark.getHeight()) / 2;
+      image.resize(500, Jimp.AUTO);
+      // const xx = (image.getWidth() - image.getWidth()) / 2;
+      // const yy = (image.getHeight() - image.getHeight()) / 2;
 
       const watermarkText = 'Pixel'; // Change this to your desired watermark text
       const watermarkImage = new Jimp(image.getWidth(), image.getHeight());
@@ -137,9 +148,19 @@ export class ResourceService {
         opacitySource: 0.5, // Adjust the opacity as needed
         opacityDest: 1, // This is required in BlendMode
       });
-      // send the result
-      const imageBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
-      return imageBuffer;
+      // Save the final image
+
+      const outputImagePathWithExtension = outputImagePath.replace(
+        /\.[^/.]+$/,
+        '.jpg',
+      );
+
+      // Save the final image with the desired extension
+      await image.writeAsync(outputImagePathWithExtension);
+      // await image.writeAsync(outputImagePath);
+      // Send the result
+      // const imageBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+      // return imageBuffer;
     } catch (error) {
       console.error('Error adding watermark:', error);
     }

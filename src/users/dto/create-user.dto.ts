@@ -17,12 +17,12 @@ export enum UserRole {
 class UserProfileDto {
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  name: string;
 
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-  // Add other profile details as needed
+  // @IsString()
+  // @IsNotEmpty()
+  // lastName: string;
+  // // Add other profile details as needed
 }
 
 class UserPreferencesDto {
