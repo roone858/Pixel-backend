@@ -1,5 +1,7 @@
 # compiled output
 /dist
+/uploads
+/watermark
 /node_modules
 
 # Logs

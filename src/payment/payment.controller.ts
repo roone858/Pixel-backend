@@ -11,12 +11,30 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post()
-  async createPayment(
-    @Body() payment: Payment,
+  async processPayment(
+    @Body('amount') amount: number,
     @User() { _id },
-  ): Promise<Payment> {
-    return this.paymentService.createPayment({ ...payment, userId: _id });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    @Body('payment_method_data') data: any,
+  ) {
+    try {
+      console.log(data);
+      const paymentIntent = await this.paymentService.createPaymentIntent(
+        amount,
+        data,
+        _id,
+      );
+      return { success: true, paymentIntent };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
+  // async createPayment(
+  //   @Body() payment: Payment,
+  //   @User() { _id },
+  // ): Promise<Payment> {
+  //   return this.paymentService.createPayment({ ...payment, userId: _id });
+  // }
 
   @Get()
   async getAllPayments(): Promise<Payment[]> {
