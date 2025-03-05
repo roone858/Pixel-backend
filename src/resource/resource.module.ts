@@ -3,11 +3,11 @@ import { ResourceService } from './resource.service';
 import { ResourceController } from './resource.controller';
 import { ResourceSchema } from './schemas/resource.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PaymentModule } from 'src/payment/payment.module';
+import { SubscriptionModule } from 'src/subscription/subscription.module';
 
 @Module({
   imports: [
-    PaymentModule,
+    SubscriptionModule,
     MongooseModule.forFeature([{ name: 'Resource', schema: ResourceSchema }]),
   ],
   controllers: [ResourceController],

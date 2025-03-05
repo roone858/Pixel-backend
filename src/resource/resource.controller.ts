@@ -23,14 +23,14 @@ import { UserDocument } from 'src/users/schemas/user.schema';
 import { join } from 'path';
 import { Response } from 'express';
 import { JwtPayload } from 'src/auth/jwt.decorator';
-import { PaymentService } from 'src/payment/payment.service';
+import { SubscriptionService } from 'src/subscription/subscription.service';
 // import mongoose from 'mongoose';
 
 @Controller('resource')
 export class ResourceController {
   constructor(
     private readonly resourceService: ResourceService,
-    private readonly paymentService: PaymentService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   @Get()
@@ -59,9 +59,9 @@ export class ResourceController {
     const inputImagePath = join(__dirname, '..', '..', 'uploads', image);
     const outputImagePath = join(__dirname, '..', '..', 'watermark', image);
     const isPaymentNotExpired = payload
-      ? await this.paymentService.isPaymentNotExpired(payload._id)
+      ? await this.subscriptionService.isSubscriptionValid(payload._id)
       : false;
-
+    console.log(isPaymentNotExpired);
     if (isPaymentNotExpired) {
       // Send the image if payment is not expired
       res.sendFile(inputImagePath);
