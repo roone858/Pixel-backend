@@ -6,7 +6,10 @@ dotenv.config();
 export const JwtPayload = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
-    const token = extractJwtFromHeader(request.headers.authorization);
+
+    const token =
+      extractJwtFromHeader(request.headers.authorization) ||
+      request.query.token;
     if (token) {
       try {
         const jwtService = new JwtService({ secret: process.env.JWT_SECRET }); // You can inject JwtService if it's registered in your module

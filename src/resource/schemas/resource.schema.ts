@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-
+export type ResourceDocument = Resource & Document;
 @Schema()
 export class Metadata {
   @Prop({ required: true })

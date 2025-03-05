@@ -18,16 +18,6 @@ export class SubscriptionService {
     private readonly stripeService: StripeService,
   ) {}
 
-  // async findAllSubscriptions(): Promise<Subscription[]> {
-  //   return this.paymentModel.find().exec();
-  // }
-
-  // async findSubscriptionId(id: string): Promise<Subscription> {
-  //   return this.paymentModel.findById(id).exec();
-  // }
-  // async findSubscriptionByUserId(userId: string): Promise<Subscription> {
-  //   return this.paymentModel.findOne({ userId }).exec();
-  // }
   async createSubscription(
     userId: string,
     name: string,
@@ -69,11 +59,4 @@ export class SubscriptionService {
       return false;
     }
   }
-  // async isPaymentNotExpired(userId: string): Promise<boolean> {
-  //   const userPayment = await this.findPaymentByUserId(userId);
-  //   if (userPayment && userPayment.subscriptionDetails.endDate) {
-  //     return new Date() <= new Date(userPayment.subscriptionDetails.endDate);
-  //   }
-  //   return false;
-  // }
 }

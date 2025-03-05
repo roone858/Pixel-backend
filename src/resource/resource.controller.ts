@@ -50,6 +50,7 @@ export class ResourceController {
       res.json(allImages);
     }
   }
+
   @Get('/:image')
   async getImage(
     @Param('image') image: string,
@@ -61,7 +62,6 @@ export class ResourceController {
     const isPaymentNotExpired = payload
       ? await this.subscriptionService.isSubscriptionValid(payload._id)
       : false;
-    console.log(isPaymentNotExpired);
     if (isPaymentNotExpired) {
       // Send the image if payment is not expired
       res.sendFile(inputImagePath);
@@ -139,20 +139,17 @@ export class ResourceController {
     await this.resourceService.addWatermark(inputImagePath, outputImagePath);
     return this.resourceService.create(imageDetails);
   }
+
   @Post('upload')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FilesInterceptor('images', 22, {
-      // 'images' is the field name for the array of files
+    FilesInterceptor('files', 22, {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
           const fileExtension = path.extname(file.originalname);
-          const name = path.basename(
-            file.originalname,
-            path.extname(file.originalname),
-          );
-          const fileName = name + Date.now() + fileExtension;
+          const name = path.basename(file.originalname, fileExtension);
+          const fileName = `${name}-${Date.now()}${fileExtension}`;
           cb(null, fileName);
         },
       }),
@@ -161,14 +158,27 @@ export class ResourceController {
   async uploadResources(
     @UploadedFiles() files,
     @User() user: UserDocument,
-    @Body() body,
+    @Body() body: any,
   ) {
+    // Ensure body titles and descriptions are arrays
+    const titles = Array.isArray(body.titles) ? body.titles : [body.titles];
+    const descriptions = Array.isArray(body.descriptions)
+      ? body.descriptions
+      : [body.descriptions];
+
+    if (
+      files.length !== titles.length ||
+      files.length !== descriptions.length
+    ) {
+      throw new Error('Mismatch between uploaded files and metadata.');
+    }
+
     const imageDetails = await Promise.all(
-      files.map(async (file) => {
+      files.map(async (file, index) => {
         return this.resourceService.calculateImageDetails(
           file,
-          body.title + file.filename,
-          body.description,
+          titles[index] || `Untitled ${index + 1}`,
+          descriptions[index] || '',
           body.categoryId,
           user._id,
         );
@@ -191,6 +201,7 @@ export class ResourceController {
           'watermark',
           details.fileName,
         );
+
         await this.resourceService.addWatermark(
           inputImagePath,
           outputImagePath,
@@ -201,6 +212,7 @@ export class ResourceController {
 
     return createdResources;
   }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() body) {
     return this.resourceService.update(id, body);

@@ -59,7 +59,6 @@ export class ResourceService {
         'uploads',
         resource.fileName,
       );
-      console.log(imagePath);
       fs.unlink(imagePath, () => {});
     } catch (err) {
       // Handle file deletion error (optional)
