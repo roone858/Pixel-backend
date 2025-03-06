@@ -59,11 +59,8 @@ export class ResourceController {
   ) {
     const inputImagePath = join(__dirname, '..', '..', 'uploads', image);
     const outputImagePath = join(__dirname, '..', '..', 'watermark', image);
-    const isPaymentNotExpired = payload
-      ? await this.subscriptionService.isSubscriptionValid(payload._id)
-      : false;
+    const isPaymentNotExpired = (res.req as any).isSubscriptionValid;
     if (isPaymentNotExpired) {
-      // Send the image if payment is not expired
       res.sendFile(inputImagePath);
     } else {
       // const watermark = await this.resourceService.addWatermark(

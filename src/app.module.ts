@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
@@ -10,6 +10,8 @@ import { ResourceModule } from './resource/resource.module';
 import { CategoryModule } from './category/category.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { SubscriptionMiddleware } from './common/middleware/subscription.middleware';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     ResourceModule,
     MailModule,
     AuthModule,
+    JwtModule,
     ResourceModule,
     CategoryModule,
     SubscriptionModule,
@@ -29,4 +32,8 @@ import { SubscriptionModule } from './subscription/subscription.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SubscriptionMiddleware).forRoutes('*'); // Applies globally
+  }
+}

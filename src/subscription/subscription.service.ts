@@ -53,6 +53,7 @@ export class SubscriptionService {
     try {
       const isValid =
         await this.stripeService.isSubscriptionValid(subscription);
+
       return isValid;
     } catch (error) {
       console.error('Stripe Subscription Check Failed:', error);
