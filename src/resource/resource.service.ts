@@ -71,6 +71,7 @@ export class ResourceService {
     file,
     title,
     description,
+    tags,
     categoryId,
     userId,
   ): Promise<any> {
@@ -94,6 +95,7 @@ export class ResourceService {
       return {
         title: title,
         description: description,
+        tags,
         category: categoryId, // Replace with an actual ObjectId of a category
         fileName: file.filename,
         metadata: {
@@ -134,7 +136,7 @@ export class ResourceService {
       // Add the text to the watermark image
       const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
       watermarkImage.print(font, 0, 0, watermarkText);
-      const stepSize = 200; // Adjust the step size as needed
+      const stepSize = 100; // Adjust the step size as needed
 
       for (let x = 0; x < image.getWidth(); x += stepSize) {
         for (let y = 0; y < image.getHeight(); y += stepSize) {

@@ -112,10 +112,12 @@ export class ResourceController {
     @User() user: UserDocument,
     @Body() body,
   ) {
+    const tags = body.tags;
     const imageDetails = await this.resourceService.calculateImageDetails(
       file,
       body.title,
       body.description,
+      tags,
       body.categoryId,
       user._id,
     );
@@ -159,6 +161,7 @@ export class ResourceController {
   ) {
     // Ensure body titles and descriptions are arrays
     const titles = Array.isArray(body.titles) ? body.titles : [body.titles];
+    const tags = Array.isArray(body.tags) ? body.tags : [body.tags];
     const descriptions = Array.isArray(body.descriptions)
       ? body.descriptions
       : [body.descriptions];
@@ -176,6 +179,7 @@ export class ResourceController {
           file,
           titles[index] || `Untitled ${index + 1}`,
           descriptions[index] || '',
+          JSON.parse(tags[index]),
           body.categoryId,
           user._id,
         );
