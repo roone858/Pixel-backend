@@ -10,9 +10,11 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/users/schemas/user.schema';
 import { MailService } from 'src/mail/mail.service';
-
+import { OAuth2Client } from 'google-auth-library';
 @Injectable()
 export class AuthService {
+  private client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private usersService: UsersService,
@@ -60,16 +62,36 @@ export class AuthService {
       return 'confirmed';
     }
   }
-  async validateGoogleUser(email: string): Promise<any> {
-    return await this.userModel.findOne({ email });
+
+  async validateGoogleToken(token: string) {
+    const ticket = await this.client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    return {
+      googleId: payload?.sub,
+      email: payload?.email,
+      displayName: payload?.name,
+      photo: payload?.picture,
+    };
   }
 
   async createGoogleUser(profile: any): Promise<any> {
-    const newUser = new this.userModel({
-      email: profile.emails[0].value,
-      name: profile.displayName,
-    });
-    return await newUser.save();
+    const user = await this.usersService.findOneByEmail(
+      profile.emails[0].value,
+    );
+    if (user) {
+      return user;
+    } else {
+      const newUser = new this.userModel({
+        email: profile.emails[0].value,
+        profile: { name: profile.displayName, photo: profile.photos[0]?.value },
+        googleId: profile.id,
+      });
+      return await newUser.save();
+    }
   }
 
   async isUsernameTaken(username: string): Promise<boolean> {

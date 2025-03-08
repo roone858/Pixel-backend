@@ -8,13 +8,15 @@ import {
   Request,
   UseGuards,
   UseFilters,
-  Res,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { Response } from 'express';
+
 // import { Roles } from 'src/users/roles.decorator';
 // import { RolesGuard } from 'src/users/roles.guard';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -60,24 +62,18 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req, @Res() res) {
-    res.redirect(
-      'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fgoogle%2Fcallback&scope=profile%20email&client_id=267959229684-cb60rimtu2gkm8p0g472pnnbdgqmjsbg.apps.googleusercontent.com',
-    );
-  }
+  async googleAuth() {}
 
-  @Get('google/callback')
+  @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req, @Res() res) {
-    // Handles the Google authentication callback
-    try {
-      const user = (req as any).user;
-      const token = await this.authService.generateToken(user._id);
-      return res.json(token);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Internal Server Error' });
-    }
+  async googleAuthRedirect(
+    @Req() req: Request & { user?: any },
+    @Res() res: Response,
+  ) {
+    const token = await this.authService.generateToken(req.user._id);
+    res.redirect(
+      `http://localhost:5173/auth/callback?token=${token.access_token}`,
+    );
   }
 
   @Get('verify-token')
