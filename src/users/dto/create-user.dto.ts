@@ -2,10 +2,10 @@ import {
   IsString,
   IsEmail,
   IsNotEmpty,
-  // IsArray,
   ValidateNested,
   IsEnum,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -19,14 +19,8 @@ class UserProfileDto {
   @IsNotEmpty()
   name: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // lastName: string;
-  // // Add other profile details as needed
-}
-
-class UserPreferencesDto {
-  // Define user preferences properties
+  @IsString()
+  photo: string;
 }
 
 export class CreateUserDto {
@@ -34,21 +28,25 @@ export class CreateUserDto {
   @IsNotEmpty()
   username: string;
 
+  @IsString()
+  googleId?: string;
+
+  @IsString()
+  facebookId?: string;
+
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
+  @IsBoolean()
+  emailConfirmed?: boolean;
+
   @IsString()
-  @IsNotEmpty()
-  password: string;
+  password?: string;
 
   @Type(() => UserProfileDto)
   @ValidateNested()
   profile: UserProfileDto;
-
-  @Type(() => UserPreferencesDto)
-  @ValidateNested()
-  preferences: UserPreferencesDto;
 
   @IsEnum(UserRole)
   @IsOptional()

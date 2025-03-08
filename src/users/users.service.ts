@@ -43,9 +43,7 @@ export class UsersService {
 
   async findOneByEmail(email: string) {
     const user = await this.userModel.findOne({ email });
-    if (!user) {
-      throw new NotFoundException();
-    }
+
     return user;
   }
   async findByEmailOrUsername(
@@ -58,6 +56,11 @@ export class UsersService {
       throw new NotFoundException();
     }
     return user;
+  }
+
+  async createUser(createUserDto: CreateUserDto): Promise<UserDocument> {
+    const newUser = new this.userModel(createUserDto);
+    return await newUser.save();
   }
   async hashPassword(password: string): Promise<string> {
     const saltRounds = +process.env.SALT_ROUNDS;
@@ -147,5 +150,9 @@ export class UsersService {
         { new: true },
       )
       .exec();
+  }
+  async findByFacebookId(facebookId: string) {
+    console.log(facebookId);
+    return await this.userModel.findOne({ facebookId }).exec();
   }
 }

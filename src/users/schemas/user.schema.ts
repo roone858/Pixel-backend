@@ -5,9 +5,9 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 export class UserProfile {
   @Prop({ required: true })
   name: string;
-  photo: string;
 
-  // Add other profile details as needed
+  @Prop()
+  photo: string;
 }
 
 @Schema()
@@ -39,12 +39,15 @@ export class User {
   authenticationTokens: string[];
 
   @Prop({ required: false, default: false })
-  confirmed: boolean;
+  emailConfirmed: boolean;
 
   @Prop({ required: false, default: 'user', enum: ['user', 'admin'] })
   role: 'user' | 'admin';
   @Prop()
   googleId: string;
+
+  @Prop()
+  facebookId: string;
 }
 
 export type UserDocument = User & Document;

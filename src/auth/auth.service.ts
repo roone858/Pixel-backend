@@ -6,23 +6,18 @@ import {
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/users/schemas/user.schema';
+import { UserDocument } from 'src/users/schemas/user.schema';
 import { MailService } from 'src/mail/mail.service';
-import { OAuth2Client } from 'google-auth-library';
 @Injectable()
 export class AuthService {
-  private client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
     private usersService: UsersService,
     private jwtService: JwtService,
     private emailService: MailService,
   ) {}
 
   async generateToken(id: string) {
+    // if (!id) throw new UnauthorizedException();
     const payload = { _id: id };
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -63,44 +58,34 @@ export class AuthService {
     }
   }
 
-  async validateGoogleToken(token: string) {
-    const ticket = await this.client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    const payload = ticket.getPayload();
-
-    return {
-      googleId: payload?.sub,
-      email: payload?.email,
-      displayName: payload?.name,
-      photo: payload?.picture,
-    };
-  }
-
-  async createGoogleUser(profile: any): Promise<any> {
-    const user = await this.usersService.findOneByEmail(
-      profile.emails[0].value,
-    );
-    if (user) {
-      return user;
+  async findOrCreateGoogleUser(user: CreateUserDto): Promise<UserDocument> {
+    const foundUser = await this.usersService.findOneByEmail(user.email);
+    if (foundUser) {
+      return foundUser;
     } else {
-      const newUser = new this.userModel({
-        email: profile.emails[0].value,
-        profile: { name: profile.displayName, photo: profile.photos[0]?.value },
-        googleId: profile.id,
-      });
-      return await newUser.save();
+      const newUser = await this.usersService.createUser(user);
+      return newUser;
     }
   }
-
+  async findOrCreateFacebookUser(user: CreateUserDto): Promise<UserDocument> {
+    const existsUser = await this.usersService.findByFacebookId(
+      user.facebookId,
+    );
+    if (existsUser) {
+      return existsUser;
+    } else {
+      const newUser = await this.usersService.createUser(user);
+      return newUser;
+    }
+  }
   async isUsernameTaken(username: string): Promise<boolean> {
-    const existingUser = await this.userModel.findOne({ username });
+    const existingUser =
+      await this.usersService.findByEmailOrUsername(username);
     return !!existingUser;
   }
 
   async isEmailExists(email: string): Promise<boolean> {
-    const existingUser = await this.userModel.findOne({ email });
+    const existingUser = await this.usersService.findOneByEmail(email);
     return !!existingUser;
   }
 }

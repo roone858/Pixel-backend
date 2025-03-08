@@ -3,7 +3,17 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { AuthService } from './auth.service';
-
+import { createSlug } from 'src/Util/createSlug';
+import { CreateUserDto, UserRole } from 'src/users/dto/create-user.dto';
+interface ProfileInterface {
+  id: string;
+  emails: { value: string }[];
+  photos: { value: string }[];
+  displayName: string;
+  profile: { name: string; photo: string };
+  username: string;
+  emailConfirmed: true;
+}
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly authService: AuthService) {
@@ -21,16 +31,32 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     req: Request,
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: ProfileInterface,
     done: VerifyCallback,
   ) {
-    const user = await this.authService.createGoogleUser(profile);
-    // const user = {
-    //   googleId: profile.id,
-    //   email: profile.emails[0].value,
-    //   name: profile.displayName,
-    //   photo: profile.photos[0]?.value,
-    // };
-    done(null, user);
+    try {
+      const baseUsername = createSlug(
+        `${profile.displayName} ${profile.id} `,
+      ).toLowerCase();
+
+      const newUser: CreateUserDto = {
+        googleId: profile.id,
+        email: profile.emails[0].value,
+        profile: {
+          name: profile.displayName,
+          photo: profile.photos[0].value,
+        },
+        username: baseUsername,
+        emailConfirmed: true,
+        role: UserRole.User,
+      };
+
+      const user = await this.authService.findOrCreateGoogleUser(newUser);
+
+      done(null, user);
+    } catch (error) {
+      console.log(error);
+      done(error, null);
+    }
   }
 }

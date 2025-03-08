@@ -11,6 +11,7 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
 import { GoogleStrategy } from './google.strategy';
 import { MailService } from 'src/mail/mail.service';
 import { MailModule } from 'src/mail/mail.module';
+import { FacebookStrategy } from './facebook.strategy';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MailModule } from 'src/mail/mail.module';
     LocalStrategy,
     UsersService,
     GoogleStrategy,
+    FacebookStrategy,
   ],
   controllers: [AuthController],
   exports: [AuthService],

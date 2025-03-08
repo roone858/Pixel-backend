@@ -75,7 +75,21 @@ export class AuthController {
       `http://localhost:5173/auth/callback?token=${token.access_token}`,
     );
   }
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookAuth() {}
 
+  @Get('facebook/redirect')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookAuthRedirect(
+    @Req() req: Request & { user?: any },
+    @Res() res: Response,
+  ) {
+    const token = await this.authService.generateToken(req.user._id);
+    res.redirect(
+      `http://localhost:5173/auth/callback?token=${token.access_token}`,
+    );
+  }
   @Get('verify-token')
   @UseGuards(JwtAuthGuard)
   verifyToken() {
