@@ -14,13 +14,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
 import { Response } from 'express';
-
-// import { Roles } from 'src/users/roles.decorator';
-// import { RolesGuard } from 'src/users/roles.guard';
-import { LocalAuthGuard } from './local-auth.guard';
-import { MongoExceptionFilter } from 'src/exceptions/mongo-exception.filter';
+import { LocalAuthGuard } from './guards/local-auth.guard';
+import { MongoExceptionFilter } from 'src/common/exceptions/mongo-exception.filter';
 import { AuthGuard } from '@nestjs/passport';
 @Controller('auth')
 @UseFilters(MongoExceptionFilter)
@@ -41,7 +37,8 @@ export class AuthController {
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
     // Call your AuthService to handle user creation and authentication
-    const result = await this.authService.signup(createUserDto);
+    console.log(createUserDto);
+    const result = await this.authService.signUp(createUserDto);
     return { success: true, user: result };
   }
   @Post('check-username')
@@ -91,13 +88,13 @@ export class AuthController {
     );
   }
   @Get('verify-token')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   verifyToken() {
     return { message: 'Token verified successfully' };
   }
 
   @Get('profile')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   getProfile(@Request() req) {
     return req.user;
   }

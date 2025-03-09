@@ -18,6 +18,9 @@ export class SubscriptionService {
     private readonly stripeService: StripeService,
   ) {}
 
+  async findAll() {
+    return await this.subscriptionModel.find();
+  }
   async createSubscription(
     userId: string,
     name: string,

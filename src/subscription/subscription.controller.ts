@@ -7,14 +7,22 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  Get,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from 'src/users/guards/admin.guard';
 
 @Controller('subscription')
-@UseGuards(JwtAuthGuard)
+@UseGuards(AuthGuard('jwt'))
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
+
+  @Get()
+  @UseGuards(AdminGuard)
+  async findAll() {
+    return this.subscriptionService.findAll();
+  }
 
   @Post('create-subscription')
   async createSubscription(

@@ -14,39 +14,40 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { AdminGuard } from './admin.guard';
+import { AdminGuard } from './guards/admin.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { join } from 'path';
 import { Response } from 'express';
 import * as path from 'path';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AdminGuard)
   findAll() {
     return this.usersService.findAll();
   }
-
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(AdminGuard)
   createAdmin(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
   @Patch()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   update(@Request() req: any, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(req.user._id, updateUserDto);
   }
 
   @Post('change-password')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   async changePassword(
     @Req() req,
     @Body('currentPassword') currentPassword: string,
@@ -68,7 +69,7 @@ export class UsersController {
   }
 
   @Post('profile-picture')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({

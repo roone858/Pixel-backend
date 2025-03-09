@@ -14,23 +14,21 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ResourceService } from './resource.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { User } from 'src/users/user.decorator';
+import { User } from 'src/users/decorators/user.decorator';
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { join } from 'path';
 import { Response } from 'express';
-import { JwtPayload } from 'src/auth/jwt.decorator';
-import { SubscriptionService } from 'src/subscription/subscription.service';
+import { AuthGuard } from '@nestjs/passport';
 // import mongoose from 'mongoose';
 
 @Controller('resource')
 export class ResourceController {
   constructor(
     private readonly resourceService: ResourceService,
-    private readonly subscriptionService: SubscriptionService,
+    // private readonly subscriptionService: SubscriptionService,
   ) {}
 
   @Get()
@@ -52,11 +50,7 @@ export class ResourceController {
   }
 
   @Get('/:image')
-  async getImage(
-    @Param('image') image: string,
-    @JwtPayload() payload: any,
-    @Res() res: Response,
-  ) {
+  async getImage(@Param('image') image: string, @Res() res: Response) {
     const inputImagePath = join(__dirname, '..', '..', 'uploads', image);
     const outputImagePath = join(__dirname, '..', '..', 'watermark', image);
     const isPaymentNotExpired = (res.req as any).isSubscriptionValid;
@@ -87,7 +81,7 @@ export class ResourceController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -140,7 +134,7 @@ export class ResourceController {
   }
 
   @Post('upload')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FilesInterceptor('files', 22, {
       storage: diskStorage({

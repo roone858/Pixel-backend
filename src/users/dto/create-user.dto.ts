@@ -8,6 +8,7 @@ import {
   IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Optional } from '@nestjs/common';
 
 export enum UserRole {
   User = 'user',
@@ -19,6 +20,7 @@ class UserProfileDto {
   @IsNotEmpty()
   name: string;
 
+  @Optional()
   @IsString()
   photo: string;
 }
@@ -28,9 +30,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   username: string;
 
+  @IsOptional()
   @IsString()
   googleId?: string;
 
+  @IsOptional()
   @IsString()
   facebookId?: string;
 
@@ -38,6 +42,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
+  @IsOptional()
   @IsBoolean()
   emailConfirmed?: boolean;
 

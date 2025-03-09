@@ -2,8 +2,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
-import { AuthService } from './auth.service';
-import { createSlug } from 'src/Util/createSlug';
+import { AuthService } from '../auth.service';
+import { createSlug } from 'src/common/Util/createSlug';
 import { CreateUserDto, UserRole } from 'src/users/dto/create-user.dto';
 interface ProfileInterface {
   id: string;

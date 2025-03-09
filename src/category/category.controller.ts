@@ -10,15 +10,14 @@ import {
 } from '@nestjs/common';
 import { Category } from './schemas/category.schema';
 import { CategoryService } from './category.service';
-import { AdminGuard } from 'src/users/admin.guard';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('categories')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(AuthGuard('jwt'))
   async createCategory(@Body() category: Category): Promise<Category> {
     return this.categoryService.createCategory(category);
   }

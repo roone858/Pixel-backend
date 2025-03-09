@@ -8,84 +8,90 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserDocument } from 'src/users/schemas/user.schema';
 import { MailService } from 'src/mail/mail.service';
+
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-    private emailService: MailService,
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
-  async generateToken(id: string) {
-    // if (!id) throw new UnauthorizedException();
-    const payload = { _id: id };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+  /** 🔥 Generate JWT Token */
+  async generateToken(userId: string): Promise<{ access_token: string }> {
+    const payload = { _id: userId };
+    return { access_token: await this.jwtService.signAsync(payload) };
   }
 
-  async signIn(identifier: string, pass: string) {
-    const user = await this.usersService.findByEmailOrUsername(identifier);
+  /** 🔑 User Sign-In */
+  async signIn(
+    identifier: string,
+    password: string,
+  ): Promise<{ access_token: string }> {
+    const user = await this.usersService.findByIdentifier(identifier);
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
-    if (!(await this.usersService.comparePasswords(pass, user.password))) {
-      throw new UnauthorizedException();
-    }
-    const payload = { _id: user._id };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    const isPasswordValid = await this.usersService.comparePasswords(
+      password,
+      user.password,
+    );
+    if (!isPasswordValid)
+      throw new UnauthorizedException('Invalid credentials');
+
+    return this.generateToken(user._id);
   }
 
-  async signup(createUserDto: CreateUserDto) {
+  /** 📝 User Sign-Up */
+  async signUp(
+    createUserDto: CreateUserDto,
+  ): Promise<{ access_token: string }> {
     const newUser = await this.usersService.create(createUserDto);
-    const token = await this.jwtService.signAsync({ _id: newUser._id });
-    this.emailService.sendVerificationEmail(createUserDto.email, token);
-    return {
-      access_token: token,
-    };
+    const token = await this.generateToken(newUser._id);
+
+    // Send verification email
+    await this.mailService.sendVerificationEmail(
+      createUserDto.email,
+      token.access_token,
+    );
+
+    return token;
   }
 
-  async confirmEmail(token: string): Promise<any> {
-    const decoded = await this.jwtService.decode(token);
-
-    if (!decoded) {
+  /** 📩 Confirm Email */
+  async confirmEmail(token: string): Promise<string> {
+    const decoded = (await this.jwtService.decode(token)) as {
+      _id: string;
+    } | null;
+    if (!decoded || !decoded._id) {
       throw new NotFoundException('Invalid confirmation token');
     }
-    const user = await this.usersService.findOneById(decoded._id);
-    if (user) {
-      this.usersService.confirmEmail(decoded._id);
-      return 'confirmed';
-    }
+    await this.usersService.confirmEmail(decoded._id);
+    return 'Email confirmed successfully';
   }
 
+  /** 🔍 Find or Create Google User */
   async findOrCreateGoogleUser(user: CreateUserDto): Promise<UserDocument> {
-    const foundUser = await this.usersService.findOneByEmail(user.email);
-    if (foundUser) {
-      return foundUser;
-    } else {
-      const newUser = await this.usersService.createUser(user);
-      return newUser;
-    }
-  }
-  async findOrCreateFacebookUser(user: CreateUserDto): Promise<UserDocument> {
-    const existsUser = await this.usersService.findByFacebookId(
-      user.facebookId,
+    return (
+      (await this.usersService.findByEmail(user.email)) ??
+      this.usersService.createUser(user)
     );
-    if (existsUser) {
-      return existsUser;
-    } else {
-      const newUser = await this.usersService.createUser(user);
-      return newUser;
-    }
-  }
-  async isUsernameTaken(username: string): Promise<boolean> {
-    const existingUser =
-      await this.usersService.findByEmailOrUsername(username);
-    return !!existingUser;
   }
 
+  /** 🔍 Find or Create Facebook User */
+  async findOrCreateFacebookUser(user: CreateUserDto): Promise<UserDocument> {
+    return (
+      (await this.usersService.findByFacebookId(user.facebookId)) ??
+      this.usersService.createUser(user)
+    );
+  }
+
+  /** 🔄 Check if Username is Taken */
+  async isUsernameTaken(username: string): Promise<boolean> {
+    return !!(await this.usersService.findByIdentifier(username));
+  }
+
+  /** 🔄 Check if Email Exists */
   async isEmailExists(email: string): Promise<boolean> {
-    const existingUser = await this.usersService.findOneByEmail(email);
-    return !!existingUser;
+    return !!(await this.usersService.findByEmail(email));
   }
 }
