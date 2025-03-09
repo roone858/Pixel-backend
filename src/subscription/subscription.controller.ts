@@ -8,6 +8,8 @@ import {
   HttpException,
   HttpStatus,
   Get,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -35,14 +37,10 @@ export class SubscriptionController {
       planId: string;
     },
   ) {
-    console.log(data);
-    return this.subscriptionService.createSubscription(
-      req.user._id,
-      data.name,
-      data.email,
-      data.paymentMethodId,
-      data.planId,
-    );
+    return this.subscriptionService.createSubscription({
+      userId: req.user._id,
+      ...data,
+    });
   }
 
   @Post('check-subscription')
@@ -56,5 +54,22 @@ export class SubscriptionController {
     }
 
     return { message: 'Subscription is valid', status: HttpStatus.OK };
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  async cancelAllSubscription() {
+    return this.subscriptionService.cancelAllSubscription();
+  }
+
+  @Delete(':stripeSubscriptionId')
+  async cancelSubscription(
+    @Request() req: any,
+    @Param('stripeSubscriptionId') stripeSubscriptionId: string,
+  ) {
+    return this.subscriptionService.cancelSubscription(
+      stripeSubscriptionId,
+      req.user._id,
+    );
   }
 }

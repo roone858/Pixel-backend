@@ -12,6 +12,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { SubscriptionMiddleware } from './common/middleware/subscription.middleware';
 import { JwtModule } from '@nestjs/jwt';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtModule } from '@nestjs/jwt';
     CategoryModule,
     SubscriptionModule,
     StripeModule,
+    PlansModule,
   ],
   controllers: [AppController],
   providers: [AppService],
