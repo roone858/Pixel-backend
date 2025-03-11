@@ -22,27 +22,22 @@ export class SubscriptionMiddleware implements NestMiddleware {
 
   async use(req: ExtendedRequest, res: Response, next: NextFunction) {
     try {
-      // Extract token from headers
       const token = this.extractToken(req);
       if (!token) {
-        return next(); // Skip if no token is found (handled by guards later)
+        return next();
       }
 
-      // Decode JWT token
       const decoded = this.jwtService.decode(token) as { _id: string };
 
       if (!decoded || !decoded._id) {
         throw new UnauthorizedException('Invalid token');
       }
 
-      // Store user ID in request
       req.user = { _id: decoded._id };
 
       if (!req.isSubscriptionChecked) {
-        // console.log(decoded._id);
         req.isSubscriptionValid =
           await this.subscriptionService.isSubscriptionValid(decoded._id);
-        // console.log(req.isSubscriptionChecked);
         req.isSubscriptionChecked = true;
       }
 
@@ -53,18 +48,15 @@ export class SubscriptionMiddleware implements NestMiddleware {
   }
 
   private extractToken(request: Request): string | undefined {
-    // Extract from Authorization header
     if (request.headers.authorization) {
       const [type, token] = request.headers.authorization.split(' ');
       if (type === 'Bearer' && token) return token;
     }
 
-    // Extract from Query Params (e.g., /api/route?token=xyz)
     if (request.query.token) {
       return request.query.token as string;
     }
 
-    // Extract from Request Body (if applicable)
     if (request.body.token) {
       return request.body.token as string;
     }

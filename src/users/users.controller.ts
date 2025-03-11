@@ -9,7 +9,6 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
-  Param,
   Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -22,6 +21,7 @@ import { join } from 'path';
 import { Response } from 'express';
 import * as path from 'path';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth-guard';
 
 @Controller('users')
 export class UsersController {
@@ -75,7 +75,6 @@ export class UsersController {
       storage: diskStorage({
         destination: './uploads', // Specify the directory where files will be stored
         filename: (req, file, cb) => {
-          console.log(file);
           const userId = (req as any).user._id; // Assuming you have a user object in the request
           const fileExtension = path.extname(file.originalname);
           const fileName = userId + Date.now() + fileExtension;
@@ -84,20 +83,37 @@ export class UsersController {
       }),
     }),
   )
-  async uploadProfilePicture(@UploadedFile() file, @Req() req) {
+  async uploadProfilePicture(
+    @UploadedFile() file,
+    @Body('updatedUser') updatedUser: string,
+    @Req() req,
+  ) {
     const { _id } = req.user;
+    const userData = JSON.parse(updatedUser);
+    await this.usersService.updateUser(_id, userData);
     const userProfile = await this.usersService.updateProfileImage(
       _id,
       file.filename,
     );
     return userProfile;
   }
+  @Get('/profile-picture')
+  @UseGuards(JwtAuthGuard)
+  getProfilePicture(@Req() req, @Res() res: Response) {
+    const { photo } = req.user.profile;
 
-  @Get('/profile-picture/:image')
-  getProfilePicture(@Param('image') image: string, @Res() res: Response) {
-    // Construct the path to the user's profile picture
-    const imagePath = join(__dirname, '..', '..', 'uploads', image);
-    // Send the file as a response
+    if (photo)
+      if (photo.startsWith('http://') || photo.startsWith('https://')) {
+        return res.redirect(photo);
+      }
+    const imagePath = join(
+      __dirname,
+      '..',
+      '..',
+      'uploads',
+      photo || 'default-profile-picture.webp',
+    );
     res.sendFile(imagePath);
+    // res.sendFile(req.user.profile.photo || imagePath);
   }
 }

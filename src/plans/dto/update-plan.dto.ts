@@ -6,26 +6,31 @@ import {
   IsNumber,
 } from 'class-validator';
 
-export class CreatePlanDto {
+export class UpdatePlanDto {
+  @IsOptional()
   @IsString()
-  name: string;
+  name?: string;
 
+  @IsOptional()
   @IsString()
-  priceId: string;
+  priceId?: string;
 
+  @IsOptional()
   @IsNumber()
-  price: string;
+  price?: number;
 
+  @IsOptional()
   @IsNumber()
-  period: number;
+  period?: number;
 
   @IsOptional()
   @IsString()
   description?: string;
 
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  features: string[];
+  features?: string[];
 
   @IsOptional()
   @IsBoolean()

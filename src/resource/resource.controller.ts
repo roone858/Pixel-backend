@@ -22,6 +22,7 @@ import { UserDocument } from 'src/users/schemas/user.schema';
 import { join } from 'path';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateResourceDto } from './dto/update-resource.dto';
 // import mongoose from 'mongoose';
 
 @Controller('resource')
@@ -50,7 +51,11 @@ export class ResourceController {
   }
 
   @Get('/:image')
-  async getImage(@Param('image') image: string, @Res() res: Response) {
+  async getImage(
+    @Param('image') image: string,
+    @Query('width') width: string,
+    @Res() res: Response,
+  ) {
     const inputImagePath = join(__dirname, '..', '..', 'uploads', image);
     const outputImagePath = join(__dirname, '..', '..', 'watermark', image);
     const isPaymentNotExpired = (res.req as any).isSubscriptionValid;
@@ -209,7 +214,7 @@ export class ResourceController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body) {
+  async update(@Param('id') id: string, @Body() body: UpdateResourceDto) {
     return this.resourceService.update(id, body);
   }
   @Delete(':id')

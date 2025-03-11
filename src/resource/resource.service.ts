@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import sizeOf from 'image-size';
 import * as Jimp from 'jimp';
+import { UpdateResourceDto } from './dto/update-resource.dto';
 
 @Injectable()
 export class ResourceService {
@@ -41,7 +42,7 @@ export class ResourceService {
   /** ✏️ Update a resource */
   async update(
     id: string,
-    resourceData: Partial<Resource>,
+    resourceData: UpdateResourceDto,
   ): Promise<Resource | null> {
     return this.resourceModel
       .findByIdAndUpdate(id, resourceData, { new: true })
@@ -147,5 +148,20 @@ export class ResourceService {
     } catch (error) {
       console.error('Error adding watermark:', error);
     }
+  }
+
+  //  Resizing image function
+  async resize(imagePath: string, width: number) {
+    // تحميل الصورة باستخدام Jimp
+    const image = await Jimp.read(imagePath);
+
+    // تعديل حجم الصورة وضغطها
+    image
+      .resize(width, Jimp.AUTO) // ضبط العرض إلى 150 بكسل والطول يتغير تلقائياً
+      .quality(70); // تقليل الجودة إلى 70%
+
+    // تحويل الصورة إلى Buffer وإرسالها
+    const imageBuffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    return imageBuffer;
   }
 }

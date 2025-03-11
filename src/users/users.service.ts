@@ -124,7 +124,7 @@ export class UsersService {
   async updateProfileImage(userId: string, filename: string): Promise<any> {
     return this.userModel.findByIdAndUpdate(
       userId,
-      { image: filename },
+      { $set: { 'profile.photo': filename } }, // تحديث `photo` فقط مع الاحتفاظ بباقي الحقول
       { new: true },
     );
   }

@@ -118,14 +118,17 @@ export class SubscriptionService {
 
   async isSubscriptionValid(userId: string): Promise<boolean> {
     // Fetch subscription from MongoDB
-    const subscription = await this.subscriptionModel.findOne({ userId });
+    const subscription = await this.subscriptionModel.findOne({
+      userId,
+      status: 'active',
+    });
     if (!subscription) return false;
 
     // Fetch latest status from Stripe
     try {
       const isValid =
         await this.stripeService.isSubscriptionValid(subscription);
-
+      console.log(isValid);
       return isValid;
     } catch (error) {
       console.error('Stripe Subscription Check Failed:', error);
@@ -141,7 +144,6 @@ export class SubscriptionService {
     const subscription = await this.subscriptionModel.findOne({
       stripeSubscriptionId: stripeSubscriptionId,
     });
-    console.log(subscription);
 
     if (userId == subscription.userId) {
       await this.stripeService.cancelSubscription(stripeSubscriptionId);

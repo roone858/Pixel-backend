@@ -65,9 +65,9 @@ export class StripeService implements OnModuleInit {
     });
 
     for (const sub of subscriptions.data) {
-      await this.stripe.subscriptions.update(sub.id);
+      const deletedSub = await this.stripe.subscriptions.cancel(sub.id);
       //  (sub.id, { cancel_at_period_end: true, });
-      console.log(`Deleted subscription: ${sub.id}`);
+      console.log(`canceled subscription really: ${deletedSub.id}`);
     }
   }
   async cancelSubscription(stripSubscriptionId: string) {

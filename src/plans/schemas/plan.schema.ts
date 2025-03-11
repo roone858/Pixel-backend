@@ -10,7 +10,7 @@ export class Plan extends Document {
   priceId: string;
 
   @Prop({ required: true })
-  price: string;
+  price: number;
 
   @Prop({ required: true })
   period: number;
