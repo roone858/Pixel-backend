@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Res,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +22,6 @@ import { join } from 'path';
 import { Response } from 'express';
 import * as path from 'path';
 import { AuthGuard } from '@nestjs/passport';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth-guard';
 
 @Controller('users')
 export class UsersController {
@@ -73,7 +73,7 @@ export class UsersController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads', // Specify the directory where files will be stored
+        destination: './uploads/profiles pictures', // Specify the directory where files will be stored
         filename: (req, file, cb) => {
           const userId = (req as any).user._id; // Assuming you have a user object in the request
           const fileExtension = path.extname(file.originalname);
@@ -97,23 +97,17 @@ export class UsersController {
     );
     return userProfile;
   }
-  @Get('/profile-picture')
-  @UseGuards(JwtAuthGuard)
-  getProfilePicture(@Req() req, @Res() res: Response) {
-    const { photo } = req.user.profile;
-
-    if (photo)
-      if (photo.startsWith('http://') || photo.startsWith('https://')) {
-        return res.redirect(photo);
-      }
+  @Get('/profile-picture/:userPic')
+  // @UseGuards(JwtAuthGuard)
+  getProfilePicture(@Param('userPic') userPic: string, @Res() res: Response) {
     const imagePath = join(
       __dirname,
       '..',
       '..',
       'uploads',
-      photo || 'default-profile-picture.webp',
+      'profiles pictures',
+      userPic || 'default-profile-picture.webp',
     );
     res.sendFile(imagePath);
-    // res.sendFile(req.user.profile.photo || imagePath);
   }
 }

@@ -23,7 +23,13 @@ export class SubscriptionService {
     private readonly stripeService: StripeService,
     private readonly plansService: PlansService,
   ) {}
-
+  async findOneByUserID(userId: string) {
+    const subscription = await this.subscriptionModel.findOne({
+      userId,
+      status: 'active',
+    });
+    return subscription;
+  }
   async findAll() {
     const data = await this.subscriptionModel.aggregate([
       {
@@ -128,7 +134,6 @@ export class SubscriptionService {
     try {
       const isValid =
         await this.stripeService.isSubscriptionValid(subscription);
-      console.log(isValid);
       return isValid;
     } catch (error) {
       console.error('Stripe Subscription Check Failed:', error);

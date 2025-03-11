@@ -28,7 +28,6 @@ export class SubscriptionMiddleware implements NestMiddleware {
       }
 
       const decoded = this.jwtService.decode(token) as { _id: string };
-
       if (!decoded || !decoded._id) {
         throw new UnauthorizedException('Invalid token');
       }

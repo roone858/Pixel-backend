@@ -62,12 +62,6 @@ export class ResourceController {
     if (isPaymentNotExpired) {
       res.sendFile(inputImagePath);
     } else {
-      // const watermark = await this.resourceService.addWatermark(
-      //   inputImagePath,
-      //   outputImagePath,
-      // );
-      // Add watermark if payment is expired
-
       const outputImagePathWithExtension = outputImagePath.replace(
         /\.[^/.]+$/,
         '.jpg',
@@ -92,8 +86,6 @@ export class ResourceController {
       storage: diskStorage({
         destination: './uploads', // Specify the directory where files will be stored
         filename: (req, file, cb) => {
-          // console.log(file);
-          // const userId = (req as any).user._id; // Assuming you have a user object in the request
           const fileExtension = path.extname(file.originalname);
           const name = path.basename(
             file.originalname,

@@ -20,12 +20,16 @@ import { AdminGuard } from 'src/users/guards/admin.guard';
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
-  @Get()
+  @Get('all')
   @UseGuards(AdminGuard)
   async findAll() {
     return this.subscriptionService.findAll();
   }
 
+  @Get()
+  async findOne(@Request() req) {
+    return this.subscriptionService.findOneByUserID(req.user._id);
+  }
   @Post('create-subscription')
   async createSubscription(
     @Request() req,

@@ -21,7 +21,6 @@ class UserProfileDto {
   name: string;
 
   @Optional()
-  @IsString()
   photo: string;
 }
 
