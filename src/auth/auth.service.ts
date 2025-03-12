@@ -45,7 +45,6 @@ export class AuthService {
   async signUp(
     createUserDto: CreateUserDto,
   ): Promise<{ access_token: string }> {
-    console.log(createUserDto);
     createUserDto.profile.photo =
       'http://localhost:3000/users/profile-picture/default-profile-picture.webp';
     const newUser = await this.usersService.create(createUserDto);
@@ -61,7 +60,7 @@ export class AuthService {
   }
 
   /** 📩 Confirm Email */
-  async confirmEmail(token: string): Promise<string> {
+  async confirmEmail(token: string): Promise<{ status: string; url: string }> {
     const decoded = (await this.jwtService.decode(token)) as {
       _id: string;
     } | null;
@@ -69,7 +68,10 @@ export class AuthService {
       throw new NotFoundException('Invalid confirmation token');
     }
     await this.usersService.confirmEmail(decoded._id);
-    return 'Email confirmed successfully';
+    return {
+      status: 'success',
+      url: 'http://localhost:5173/success-confirmed-email',
+    };
   }
 
   /** 🔍 Find or Create Google User */

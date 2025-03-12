@@ -22,7 +22,6 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     done: (err: any, user: any) => void,
   ) {
     try {
-      console.log(profile);
       const baseUsername = createSlug(
         `${profile.name.givenName} ${profile.name.familyName} ${profile.id} `,
       ).toLowerCase();

@@ -25,7 +25,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 // import mongoose from 'mongoose';
 
-@Controller('resource')
+@Controller('resources')
 export class ResourceController {
   constructor(
     private readonly resourceService: ResourceService,

@@ -45,6 +45,15 @@ export class UsersController {
   update(@Request() req: any, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(req.user._id, updateUserDto);
   }
+  @Patch(':userId')
+  @UseGuards(AuthGuard('jwt'), AdminGuard)
+  updateByAdmin(
+    @Request() req: any,
+    @Body() updateUserDto: UpdateUserDto,
+    @Param('userId') userId: string,
+  ) {
+    return this.usersService.updateUser(userId, updateUserDto);
+  }
 
   @Post('change-password')
   @UseGuards(AuthGuard('jwt'))
@@ -100,6 +109,7 @@ export class UsersController {
   @Get('/profile-picture/:userPic')
   // @UseGuards(JwtAuthGuard)
   getProfilePicture(@Param('userPic') userPic: string, @Res() res: Response) {
+    console.log(userPic);
     const imagePath = join(
       __dirname,
       '..',

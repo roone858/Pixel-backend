@@ -8,7 +8,6 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ResourceModule } from './resource/resource.module';
 import { CategoryModule } from './category/category.module';
-import { StripeModule } from './stripe/stripe.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { SubscriptionMiddleware } from './common/middleware/subscription.middleware';
 import { JwtModule } from '@nestjs/jwt';
@@ -28,7 +27,6 @@ import { PlansModule } from './plans/plans.module';
     ResourceModule,
     CategoryModule,
     SubscriptionModule,
-    StripeModule,
     PlansModule,
   ],
   controllers: [AppController],

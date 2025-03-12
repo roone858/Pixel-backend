@@ -31,13 +31,16 @@ export class AuthController {
   }
 
   @Get('confirm')
-  async emailConfirmation(@Query() query: { token: string }) {
-    return await this.authService.confirmEmail(query.token);
+  async emailConfirmation(
+    @Query() query: { token: string },
+    @Res() res: Response,
+  ) {
+    const result = await this.authService.confirmEmail(query.token);
+    res.redirect(result.url);
   }
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
     // Call your AuthService to handle user creation and authentication
-    console.log(createUserDto);
     const result = await this.authService.signUp(createUserDto);
     return { success: true, user: result };
   }
